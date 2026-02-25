@@ -263,7 +263,7 @@ function startFrame4(trackIndex){
 
   
     recordPlayer.addEventListener('transitionend', onPlayerShown);
-
+    
     // Show return button slightly after everything else
   setTimeout(()=>{
     returnBtn.classList.add('show');
