@@ -7,8 +7,8 @@
 :root{
   --vinyl-size: 560px; /* default vinyl width/height */
   --transition-speed: 700ms;  /* hole position for the vinyl on the player (0..1) */
-  --vinyl-hole-x-ratio: 0.39;
-  --vinyl-hole-y-ratio: 0.50;  /* needle start position (ratios 0..1) and vertical offset in px */
+  --vinyl-hole-x-ratio: 0.38;
+  --vinyl-hole-y-ratio: 0.49;  /* needle start position (ratios 0..1) and vertical offset in px */
   --needle-x-ratio: 0.7425;
   --needle-y-ratio: -0.1125;
   --needle-vertical-offset: -200px;
