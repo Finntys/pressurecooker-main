@@ -1,0 +1,212 @@
+/* ==========================
+   styles.css
+   - Styles for all frames and transitions
+   - Comments mark sections for easier reading
+ ========================== */
+
+:root{
+  --vinyl-size: 560px; /* default vinyl width/height */
+  --transition-speed: 700ms;  /* hole position for the vinyl on the player (0..1) */
+  --vinyl-hole-x-ratio: 0.39;
+  --vinyl-hole-y-ratio: 0.50;  /* needle start position (ratios 0..1) and vertical offset in px */
+  --needle-x-ratio: 0.7425;
+  --needle-y-ratio: -0.1125;
+  --needle-vertical-offset: -200px;
+}
+
+/* Reset and base */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#app{height:100%;width:100%}
+/* prevent default browser image dragging behaviour */
+img{-webkit-user-drag:none;focus{ outline:none;}}
+body{
+  background:#7C4949; /* FRAME 1 background color */
+  transition:background-color var(--transition-speed) ease-in-out;
+  overflow:hidden;
+  font-family: 'Jost', system-ui, sans-serif;
+  
+}
+
+* {
+  user-select: none;
+  -webkit-user-select: none; /* Chrome / Safari */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* Old Edge */
+}
+
+/* App container (holds all frames' elements) */
+#app{position:relative;height:100vh;width:100vw}
+
+/* --------------------------
+   VINYL (used in frames 1-4)
+   We still provide visual defaults here.
+   -------------------------- */
+#vinyl{
+  position:absolute;
+  width:var(--vinyl-size);
+  height:var(--vinyl-size);
+  object-fit:contain;
+  cursor:pointer;
+  transform-origin:50% 50%;
+  will-change:transform,left,top,width,height;
+  transition: left var(--transition-speed) ease-in-out, top var(--transition-speed) ease-in-out, transform var(--transition-speed) ease-in-out, width 400ms ease-in-out, height 400ms ease-in-out;
+  /* always sit above the record player */
+  z-index:10;
+}
+
+/* Instruction text beneath the vinyl (FRAME 1) */
+#instruction{
+  position:absolute;
+  color:#FFFFFF;
+  font-family: 'Inria Serif', serif; /* instruction font */
+  text-align:center;
+  font-size:20px;
+  left:50%;
+  transform:translateX(-50%);
+  will-change:top,opacity;
+  transition:opacity 300ms ease-in-out, top 600ms ease-in-out;
+}
+
+/* --------------------------
+   Track list (FRAME 2)
+   Hidden initially. Slides out from the vinyl when active.
+   -------------------------- */
+#trackList{
+  list-style:none;
+  position:absolute;
+  /* position will be set by JS to match the vinyl's center in FRAME 1 */
+  width:260px;
+  padding:0 8px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 400ms ease, transform 500ms cubic-bezier(.2,.8,.2,1), left 300ms ease, top 300ms ease;
+  transform:translate(-50%,-50%);
+}
+#trackList.active{opacity:1;pointer-events:auto;transform:translate(calc(-50% - 20px), -50%)}
+
+#trackList li{
+  color:#fff;
+  padding:12px 4px;
+  font-size:18px;
+  position:relative;
+  cursor:pointer;
+}
+/* thin white line under each element like a notebook */
+#trackList li::after{
+  content:"";
+  /* make the underline extend well to the right (~4x) */
+  position:absolute;
+  left:0;
+  top:calc(100% - 6px);
+  width:400%;
+  height:1px;
+  background:rgba(255,255,255,0.9);
+}
+
+/* --------------------------
+   Loading text (FRAME 3)
+   Appears on the right side in Jost font.
+   -------------------------- */
+#loadingText{
+  position:absolute;
+  right:6%;
+  top:50%;
+  transform:translateY(-50%);
+  color:#fff;
+  font-family:'Jost',sans-serif;
+  font-size:32px;
+  opacity:0;
+  transition:opacity 200ms ease-in-out;
+}
+#loadingText.show{opacity:1}
+
+/* --------------------------
+   Record player (FRAME 4)
+   Will slide in from left rotated 90deg and fill full vertical height.
+   -------------------------- */
+/* small overlays placed on top of the player; start hidden and fade in when
+   the player appears */
+#needle, #pitchKnob{
+  position:absolute;
+  opacity:0;
+  transition:opacity 300ms ease;
+  z-index:20;
+}
+/* cursor hints make it obvious these overlays can be dragged */
+#needle{cursor:grab;}
+#pitchKnob{
+  cursor:grab;
+  pointer-events:auto;
+}
+#needle.show, #pitchKnob.show{opacity:1;}
+
+/* Record player: will fade into the center of the viewport when shown
+   and have a fixed height of 750px. Initially it's offscreen and rotated -90deg
+   so we can rotate into the correct orientation when showing. */
+#recordPlayer{
+  position:absolute;
+  /* start completely offscreen to the left; CSS slide-in handled by the
+     `.show` class rather than inline styles. */
+  left:-120%;
+  top:50%;
+  transform:translate(-50%,-50%) rotate(-90deg);
+  height:0; /* animated to 750px when shown */
+  width:auto;
+  object-fit:contain;
+  transition:opacity 700ms ease, transform 700ms cubic-bezier(.2,.8,.2,1), height 700ms ease, left 700ms ease;
+  opacity:0;
+  z-index:5; /* record player behind vinyl */
+}
+/* when showing, slide into center, rotate to 0deg and expand height */
+#recordPlayer.show{
+  opacity:1;
+  left:50%;
+  transform:translate(-50%,-50%) rotate(0deg);
+  height:750px;
+}
+
+/* ensure overlays sit above the record but below controls */
+#needle{width:240px; /* double size - adjust if your graphic differs */}
+#pitchKnob{width:40px; /* scale as necessary */}
+
+/* --------------------------
+   Return button (FRAME 4)
+   Placed on the right side of the record player.
+   -------------------------- */
+#returnBtn{
+  position:absolute;
+  right:18px;
+  top:18px;
+  z-index:40;
+  padding:10px 14px;
+  border-radius:6px;
+  border:none;
+  background:rgba(255,255,255,0.08);
+  color:#fff;
+  cursor:pointer;
+  font-size:16px;
+  opacity:0;
+  transition:opacity 300ms ease;
+}
+#returnBtn.show{opacity:1}
+
+/* --------------------------
+   Spinning animation for the vinyl (FRAME 4)
+   33.3 rpm = 33.3 rotations per minute -> period ~= 1.8018s per rotation
+   -------------------------- */
+/* spinning preserves scale via CSS variable --spin-scale (set on the element) */
+@keyframes spin-33-3 {
+  from{transform:rotate(0deg) scale(var(--spin-scale,1))}
+  to{transform:rotate(360deg) scale(var(--spin-scale,1))}
+}
+.spinning{animation:spin-33-3 1.8s linear infinite; transform-origin:50% 50%}
+
+/* Small helper for pointer-disabled states */
+.disabled{pointer-events:none;opacity:0.9}
+
+/* Responsive tweaks */
+@media (max-width:640px){
+  :root{--vinyl-size:360px}
+  #trackList{width:200px}
+  #loadingText{font-size:20px}
+}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vinyl Player — Single Page</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inria+Serif:wght@400;700&family=Jost:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="app">
+    <img id="vinyl" src="Record.png" draggable="false" alt="vinyl">
+    <div id="instruction">Click on the vinyl to start.</div>
+
+    <ul id="trackList" aria-hidden="true">
+      <li data-track="1">Audio 1</li>
+      <li data-track="2">Audio 2</li>
+      <li data-track="3">Audio 3</li>
+      <li data-track="4">Audio 4</li>
+    </ul>
+
+    <div id="loadingText" aria-hidden="true">loading...</div>
+    <img id="recordPlayer" src="VinylPlayer.png" alt="record player" aria-hidden="true"draggable="false">
+    <img id="needle" src="VinylPlayerNeedle.png" alt="needle" aria-hidden="true" draggable="false">
+    <img id="pitchKnob" src="PitchShifterKnob.png" alt="pitch knob" aria-hidden="true" draggable="false">
+    <button id="returnBtn" aria-hidden="true">return</button>
+
+    <!-- Audio element -->
+    <audio id="audioPlayer" src="audio/Sound1.mp3"></audio>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
