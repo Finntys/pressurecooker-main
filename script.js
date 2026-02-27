@@ -40,6 +40,14 @@ const pitchKnob = document.getElementById('pitchKnob');
 const returnBtn = document.getElementById('returnBtn');
 const audioPlayer = document.getElementById('audioPlayer');
 
+/* utility for pitch changes */
+function changePitch(rate) {
+  audioPlayer.playbackRate = rate;
+}
+
+// current pitch thresholds will be calculated from knob position
+
+
 let state = 1; // current frame (1..4)
 let vinylSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--vinyl-size')) || 560;
 let vinylEnlarged = false;
@@ -127,6 +135,11 @@ function repositionForFrame4(){
   placeVinyl(targetLeft, targetTop, 0, vW, vH, finalScale);
   positionNeedle();
   positionPitchKnob();
+  // set initial pitch based on knob location
+  const minY = parseFloat(pitchKnob.dataset.minY);
+  const maxY = parseFloat(pitchKnob.dataset.maxY);
+  const y = parseFloat(pitchKnob.style.top);
+  updatePitchFromKnob(y, minY, maxY);
   resetNeedle();
 }
 /* Initialize positions (FRAME 1) */
@@ -328,6 +341,8 @@ if(pitchKnob){
         pitchKnob.style.left = pitchKnob.baseX + 'px';
      }
      pitchKnob.style.top  = y + 'px';
+     // update audio pitch based on vertical position
+     updatePitchFromKnob(y, minY, maxY);
   });
   ['pointerup','pointercancel'].forEach(evt=>{
      pitchKnob.addEventListener(evt, e=>{
@@ -335,6 +350,21 @@ if(pitchKnob){
         pitchKnob.releasePointerCapture(e.pointerId);
      });
   });
+
+  // pitch control helper --------------------------------------------------
+  function updatePitchFromKnob(y, minY, maxY){
+     if(isNaN(minY) || isNaN(maxY)) return;
+     const pct = (y - minY) / (maxY - minY); // 0 = top, 1 = bottom
+     let rate;
+     if(pct <= 0.5){
+        // top half: 78->33.3
+        rate = 2.228 + (1.0 - 2.228) * (pct / 0.5);
+     } else {
+        // bottom half: 33.3->45
+        rate = 1.0 + (1.363 - 1.0) * ((pct - 0.5) / 0.5);
+     }
+     changePitch(rate);
+  }
 }
 
 /* needle helpers and drag implementation */
@@ -345,6 +375,37 @@ let needleStartY = 0;
 let needleStartAngle = 0;
 // when true, pointer moves reposition the needle instead of rotating it
 let manualAdjust = false;
+
+// ease-in spinner state
+let spinAnimating = false;
+function startSpinWithEase(){
+  if(spinAnimating) return;
+  spinAnimating = true;
+  // clear any existing CSS animation so we can manually rotate
+  vinyl.classList.remove('spinning');
+  let angle = 0;
+  let speed = 0;
+  const scale = parseFloat(getComputedStyle(vinyl).getPropertyValue('--spin-scale')) || 1;
+  function step(){
+     speed += 0.5; // acceleration per frame
+     angle += speed;
+     vinyl.style.transform = `rotate(${angle}deg) scale(${scale})`;
+     if(speed < 20){
+        requestAnimationFrame(step);
+     } else {
+        // hand control back to CSS animation
+        vinyl.style.transform = '';
+        vinyl.classList.add('spinning');
+        spinAnimating = false;
+     }
+  }
+  requestAnimationFrame(step);
+}
+
+function stopSpin(){
+  vinyl.classList.remove('spinning');
+  vinyl.style.transform = '';
+}
 
 
 function updateNeedleHome(){
@@ -431,10 +492,11 @@ needle.addEventListener('pointermove', e=>{
    const isOnNow = over && meetsAngle;
    if(isOnNow && !needleOnRecord){
      needleOnRecord = true;
-     vinyl.classList.add('spinning');
+     startSpinWithEase();
      audioPlayer.play().catch(err=>console.warn('audio play failed',err));
    } else if(!isOnNow && needleOnRecord){
      needleOnRecord = false;
+     stopSpin();
      new Audio('audio/NeedleDropSoundEffect.mp3').play();
      audioPlayer.pause();
    }
